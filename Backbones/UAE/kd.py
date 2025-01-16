@@ -962,9 +962,9 @@ class NeuroCard(tune.Trainable):
         self.layers=t_layers
         self.embed_size=t_embed_size
 
-        self.LoadCheckpoint_n(self.teacher_1, "/data1/jxlei/UAE/UAE_joins/test_results/models/imdb-6.2MB-model81.365-made-resmade-hidden128_128_128_128-emb16-directIo-embedInembedOut-embsTied-dropout-learnableUnk-factorized-groupedDropout-14wsb-10epochs-640.00Ktups-seed0-usesemi-q-10.pt")
-        self.LoadCheckpoint_n(self.teacher_2, "/data1/jxlei/UAE/UAE_joins/test_results/models/imdb-6.5MB-model79.846-made-resmade-hidden128_128_128_128_128_128-emb16-directIo-embedInembedOut-embsTied-dropout-learnableUnk-factorized-groupedDropout-14wsb-10epochs-2.56Mtups-seed0-usesemi-q-10.pt")
-        self.LoadCheckpoint_n(self.teacher_3, "/data1/jxlei/UAE/UAE_joins/test_results/models/imdb-6.7MB-model78.873-made-resmade-hidden128_128_128_128_128_128_128_128-emb16-directIo-embedInembedOut-embsTied-dropout-learnableUnk-factorized-groupedDropout-14wsb-10epochs-2.56Mtups-seed0-usesemi-q-10.pt")
+        self.LoadCheckpoint_n(self.teacher_1, path_model1)
+        self.LoadCheckpoint_n(self.teacher_2, path_model2)
+        self.LoadCheckpoint_n(self.teacher_3, path_model3)
         print("teacher model successful loaded")
         print("student paramaters",model)
         # print("teacher_1 paramaters",sum(p.numel() for p in self.teacher_1.parameters()))

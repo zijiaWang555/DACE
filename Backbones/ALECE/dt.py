@@ -88,57 +88,9 @@ def train_with_batch(model, args, train_data, validation_data, curr_ckpt_step, t
         batch_no = 0
         batch_temp = []
         wl = 0.02 + (epoch - 1) * (0.08 / 1499)
-        ####################################  V1
-        # for batch in train_dataset.take(n_batches):
-        #     if random.random() < wl and len(batch_use)!=0 and data_re:
-        #             batch = random.choice(batch_use)
-        #     batch_temp.append(batch)
-        #     model.train_step(batch)
-        #     batch_no += 1
-        ####################################   V2
-        # err_data = []
-        # for batch in train_dataset.take(n_batches):
-        #     f = model.train_step_n(batch)
-        #     if f:
-        #         tf.data.Dataset.from_tensor_slices(batch)
-        #     batch_no += 1
-        #################################### V3
-        # T = 3.0  # 设置温度参数
-        # alpha = 0.07  # 蒸馏损失权重
-        #
-        # for batch in train_dataset.take(n_batches):
-        #     if random.random() < wl and len(batch_use) != 0 and data_re:
-        #         batch = random.choice(batch_use)
-        #     batch_temp.append(batch)
-        #     (train_X, train_Q, train_weights, train_labels) = batch
-        #     with tf.GradientTape() as tape:
-        #         loss = model.build_loss(train_X, train_Q, train_weights, train_labels)
-        #         pred_stu, _ = model.forward(train_X, train_Q, training=True)
-        #         # print("pred_stu_shape:",pred_stu.shape)
-        #         pred_teacher, _ = model.model2.forward(train_X, train_Q, training=False)
-        #         if len(pred_teacher_outputs) == 0:
-        #             pred_teacher_outputs = pred_teacher
-        #         else:
-        #             pred_teacher_outputs = np.concatenate((pred_teacher,pred_teacher_outputs),axis=0)
-        #             print("pred_teacher_outputs_shape:",pred_teacher_outputs.shape)
-        #
-        #         # 温度处理和软化后的 logits
-        #
-        #         pred_stu_softmax = tf.nn.softmax(pred_stu / T)
-        #         pred_teacher_softmax = tf.nn.softmax(pred_teacher / T)
-        #         # 知识蒸馏损失
-        #         loss_t = tf.keras.losses.KLDivergence()(pred_teacher_softmax, pred_stu_softmax) * (T * T)
-        #
-        #         # 总损失
-        #         loss = loss + loss_t * alpha
-        #
-        #     gradients = tape.gradient(loss, model.attn_model.trainable_variables)
-        #     model.optimizer.apply_gradients(zip(gradients, model.attn_model.trainable_variables))
-        #     batch_no += 1
 
-    #################################### V4
-        T = 3.0  # 设置温度参数
-        alpha = 0.09  # ot损失权重
+        T = 3.0
+        alpha = 0.09
         for batch in train_dataset.take(n_batches):
             if random.random() < wl and len(batch_use) != 0 and data_re:
                 batch = random.choice(batch_use)
@@ -155,7 +107,7 @@ def train_with_batch(model, args, train_data, validation_data, curr_ckpt_step, t
 
                 loss_ot = tf.keras.losses.KLDivergence()(ot_softmax, pred_stu_softmax) * (T * T)
 
-                # 总损失
+
                 loss = loss + loss_ot * alpha
 
             gradients = tape.gradient(loss, model.attn_model.trainable_variables)
@@ -180,10 +132,9 @@ def train_with_batch(model, args, train_data, validation_data, curr_ckpt_step, t
             length = len(lossa)  
             top_20_percent = length // 5  # 计算20%的长度  
             
-            # 对列表进行降序排序  
-            sorted_list = sorted(lossa, reverse=True)  
+            sorted_list = sorted(lossa, reverse=True)
             
-            # 获取从大到小20%位置的值  
+
             bsize = 2500
             top_20_percent_value = sorted_list[top_20_percent]  
             
@@ -218,8 +169,6 @@ def train_with_batch(model, args, train_data, validation_data, curr_ckpt_step, t
             print(f'Epoch-{epoch}')
         if epoch%1==0:
             eval_new(model, args, test_data)
-        # print("ot_list_shape:",pred_teacher_outputs.shape)
-        # np.save('pred_teacher_outputs_job.npy', pred_teacher_outputs)
 def eval_new(model, args, test_data):
     batch_preds_list = []
 
@@ -245,14 +194,12 @@ def eval_new(model, args, test_data):
     q_error = eval_utils.generic_calc_q_error(preds, labels)
     ########################
     p_error_test = np.sort(q_error)
-    n = p_error_test.shape[0]
-    # print(f'p_error.shape = {p_error_test.shape}')
+    n = p_error_test.shape[0]')
     ratios = [0.5, 0.9, 0.95, 0.99]
 
     error_vals = []
     for ratio in ratios:
         idx = int(n * ratio)
-        # print(f'idx = {idx}')
         error_vals.append(p_error_test[idx])
 
     # print(error_vals)
@@ -284,8 +231,6 @@ def eval(model, args, test_data, q_error_dir):
         batch_preds_list.append(batch_preds.numpy())
         cu = cu+1
     b=datetime.now()
-    print("测试集长度: ",test_length)
-    print("用时：",(b-a).microseconds/test_length /1000)
 
     preds = np.concatenate(batch_preds_list, axis=0)
     preds = label_preds_to_card_preds(preds, args)
@@ -296,7 +241,6 @@ def eval(model, args, test_data, q_error_dir):
     ########################
     p_error_test = np.sort(q_error)
     n = p_error_test.shape[0]
-    # print(f'p_error.shape = {p_error_test.shape}')
     ratios = [0.5, 0.9, 0.95, 0.99]
 
     error_vals = []
@@ -497,62 +441,11 @@ def run():
     kd = False
     data_re = False
     if kd==True :
-       #  ########################################################## job_light
-       #  original_mlp = args.mlp_hidden_dim
-       #  original_key = args.attn_head_key_dim
-       #  original_feed_forward = args.feed_forward_dim
-       #  original_num_attn = args.num_attn_heads
-       #  args.mlp_hidden_dim = 512
-       #  args.attn_head_key_dim=511
-       #  args.feed_forward_dim=2048
-       #  model2 = ALECE.ALECE(args, trainable=False)
-       #  model2.set_model_name("T1")
-       #  model2.ckpt_init("/data1/liuhaoran/ALECE/src/exp7/alece_teacher_max_job/ckpt/ALECE_static/")
-       #  ckpt_files2 = FileViewer.list_files("/data1/liuhaoran/ALECE/src/exp7/alece_teacher_max_job/ckpt/ALECE_static/")
-       #  if len(ckpt_files2) > 0:
-       #      ckpt_step2 = model2.restore().numpy()
-       #  else:
-       #      ckpt_step2 = -1
-       #  print('ckpt_step =', ckpt_step2)
-       #
-       #  # ##########################################################
-       #  args.mlp_hidden_dim = 512
-       #  args.attn_head_key_dim=1023
-       #  args.num_attn_heads = 8
-       #  model3 = ALECE.ALECE(args, trainable=False)
-       #  model3.set_model_name("T2")
-       #  model3.ckpt_init("/data1/liuhaoran/ALECE/src/exp8/alece_med_job/ckpt/ALECE_static/")
-       #  ckpt_files2 = FileViewer.list_files("/data1/liuhaoran/ALECE/src/exp8/alece_med_job/ckpt/ALECE_static/")
-       #  if len(ckpt_files2) > 0:
-       #      ckpt_step2 = model3.restore().numpy()
-       #  else:
-       #      ckpt_step2 = -1
-       #  print('ckpt_step =', ckpt_step2)
-       #
-       #  #########################################################
-       #  args.mlp_hidden_dim = 512
-       #  args.num_attn_heads = 10
-       #  args.feed_forward_dim=2048
-       #  model4 = ALECE.ALECE(args, trainable=False)
-       #  model4.set_model_name("T3")
-       #  model4.ckpt_init("/data1/liuhaoran/ALECE/src/exp8/alece_bigmax_job100/ckpt/ALECE_static/")
-       #  ckpt_files2 = FileViewer.list_files("/data1/liuhaoran/ALECE/src/exp8/alece_bigmax_job100/ckpt/ALECE_static/")
-       #  if len(ckpt_files2) > 0:
-       #      ckpt_step2 = model4.restore().numpy()
-       #  else:
-       #      ckpt_step2 = -1
-       #  print('ckpt_step =', ckpt_step2)
-       #  args.mlp_hidden_dim = original_mlp
-       #  args.attn_head_key_dim = original_key
-       #  args.feed_forward_dim = original_feed_forward
-       #  args.num_attn_heads = original_num_attn
-       ######################################################### STATS
-       ##########################################################
 
        model2 = ALECE.ALECE(args, trainable=False)
        model2.set_model_name("T1")
-       model2.ckpt_init("/data1/liuhaoran/ALECE/src/exp8/alece_stu_kd/ckpt/ALECE_static/")
-       ckpt_files2 = FileViewer.list_files("/data1/liuhaoran/ALECE/src/exp8/alece_stu_kd/ALECE_static/")
+       model2.ckpt_init(path_model2)
+       ckpt_files2 = FileViewer.list_files(path_model2)
        if len(ckpt_files2) > 0:
            ckpt_step2 = model2.restore().numpy()
        else:
@@ -590,4 +483,3 @@ def run():
     file_utils.write_all_lines(path, lines)
 
 
-# python train.py --model ALECE --batch_size 128 --keep_train 0 --gpu 1 --data STATS --wl_type ins_heavy

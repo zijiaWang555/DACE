@@ -427,10 +427,6 @@ def MakeMade(
         if factor_table:
             # Correct for subvar ordering.
             for i in range(special_orders):
-                # This could have [..., 6, ..., 4, ..., 5, ...].
-                # So we map them back into:
-                # This could have [..., 4, 5, 6, ...].
-                # Subvars have to be in order and also consecutive
                 order = orders[i]
                 for orig_col, sub_cols in factor_table.fact_col_mapping.items():
                     first_subvar_index = cols_to_train.index(sub_cols[0])
@@ -471,16 +467,6 @@ class NeuroCard(tune.Trainable):
         if config['__gpu'] == 0:
             torch.set_num_threads(config['__cpu'])
 
-        # W&B.
-        # Do wandb.init() after the os.chdir() above makes sure that the Git
-        # diff file (diff.patch) is w.r.t. the directory where this file is in,
-        # rather than w.r.t. Ray's package dir.
-        # wandb_project = config['__run']
-        # wandb.init(name=os.path.basename(
-        #     self.logdir if self.logdir[-1] != '/' else self.logdir[:-1]),
-        #            sync_tensorboard=True,
-        #            config=config,
-        #            project=wandb_project)
 
         self.epoch = 0
 
@@ -547,12 +533,6 @@ class NeuroCard(tune.Trainable):
                                self.train_data,
                                table_primary_index=table_primary_index)
         self.data_buffer=queue.Queue()
-        # NOTE: ReportModel()'s returned value is the true model size in
-        # megabytes containing all all *trainable* parameters.  As impl
-        # convenience, the saved ckpts on disk have slightly bigger footprint
-        # due to saving non-trainable constants (the masks in each layer) as
-        # well.  They can be deterministically reconstructed based on RNG seeds
-        # and so should not be counted as model size.
         self.mb = train_utils.ReportModel(model)
         if not isinstance(model, transformer.Transformer):
             print('applying train_utils.weight_init()')
@@ -562,7 +542,6 @@ class NeuroCard(tune.Trainable):
         if self.use_data_parallel:
             self.model = DataParallelPassthrough(self.model)
 
-        # wandb.watch(model, log='all')
 
         if self.use_transformer:
             opt = torch.optim.Adam(
@@ -1095,9 +1074,6 @@ def run(args):
     os.environ['CUDA_VISIBLE_DEVICE']='5'
     ray.init(ignore_reinit_error=True)
 
-    # for k in args.run:
-    #     assert k in experiments.EXPERIMENT_CONFIGS, 'Available: {}'.format(
-    #         list(experiments.EXPERIMENT_CONFIGS.keys()))
 
     num_gpus = args.gpus if torch.cuda.is_available() else 0
     num_cpus = args.cpus

@@ -675,9 +675,9 @@ class NeuroCard(tune.Trainable):
         self.fc_hiddens = t_hiddens
         self.layers=t_layers
 
-        self.LoadCheckpoint_n(self.teacher_1, "/data1/jxlei/NeuroCard/neurocard/neurocard/models/teacher_4.pt")
-        self.LoadCheckpoint_n(self.teacher_2, "/data1/jxlei/NeuroCard/neurocard/neurocard/models/teacher_5.pt")
-        self.LoadCheckpoint_n(self.teacher_3, "/data1/jxlei/NeuroCard/neurocard/neurocard/models/teacher_3.pt")
+        self.LoadCheckpoint_n(self.teacher_1, path_model1)
+        self.LoadCheckpoint_n(self.teacher_2, path_model2)
+        self.LoadCheckpoint_n(self.teacher_3, path_model3)
 
         print("teacher model successful loaded")
         self.ot=OT('cpu')

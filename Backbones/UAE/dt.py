@@ -268,10 +268,7 @@ def run_epoch(split,
             if xbhat is None:
                 xbhat = torch.zeros_like(model_out)
             xbhat += model_out
-            # if transfer and epoch_num > pretrain_epoch:
-                # random_indices = np.random.choice(source_interv.shape[0], size=xbhat.shape[0], replace=False)
-                # random_source_xbhat = source_interv[random_indices]
-                # random_source_xbhat = torch.tensor(random_source_xbhat).to(train_utils.get_device())
+       _utils.get_device())
         if num_orders_to_forward == 1:
             loss = model.nll(xbhat, xb, label_smoothing=label_smoothing).mean()
             # if transfer and epoch_num > pretrain_epoch:
@@ -348,14 +345,7 @@ def run_epoch(split,
                 train_throughput.update(ntuples / dur)
 
             if summary_writer is not None:
-                # wandb.log({
-                #     'train/lr': lr,
-                #     'train/tups': ntuples,
-                #     'train/tups_per_sec': ntuples / dur,
-                #     'train/nll': loss_bits,
-                #     'train/global_step': global_steps,
-                #     'train/l2_grad_norm': l2_grad_norm,
-                # })
+
                 summary_writer.add_scalar('train/lr',
                                           lr,
                                           global_step=global_steps)
@@ -1561,7 +1551,7 @@ class NeuroCard(tune.Trainable):
         return results
     def cal_source_inter(self):
         out = []
-        self.LoadCheckpoint_n(self.model, '/data1/jxlei/UAE/UAE_joins/test_results/models/imdb-1.4MB-model98.221-made-resmade-hidden32_32-emb4-directIo-embedInembedOut-embsTied-dropout-learnableUnk-factorized-groupedDropout-14wsb-10epochs-2.56Mtups-seed0-usesemi-q-10.pt')
+        self.LoadCheckpoint_n(self.model,path_stu)
         loader = data.DataLoader(self.train_data,
                                  batch_size=self.bs)
         for step, xb in enumerate(loader):
@@ -1575,7 +1565,7 @@ class NeuroCard(tune.Trainable):
             out.append(model_out.detach().cpu().numpy())
             if (step+1)%500==0:
                 out = np.concatenate(out, axis=0)
-                filename=os.path.join('/data1/jxlei/UAE/UAE_joins/source_interv','source_interv_{}.pkl'.format((step+1)//500))
+                filename=os.path.join(path_dt)
                 pickle.dump(out, open(filename, 'wb'))
                 out = []
 
